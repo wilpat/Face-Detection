@@ -1,6 +1,6 @@
 This application uses the pretrained face detection model on [Clarifai](https://www.clarifai.com) to detect the face on an image you provide it.
 
-## Available Scripts
+## Setup
 
 After cloning, run
 
