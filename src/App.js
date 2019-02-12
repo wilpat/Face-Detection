@@ -12,7 +12,7 @@ import 'tachyons';
 import Clarifai from 'clarifai';
 
 const app = new Clarifai.App({
- apiKey: 'Your-API-Key'
+ apiKey: '5af5d3e2299d4875b792b365a39f9e23'
 });
 
 
@@ -28,15 +28,36 @@ const particlesPar = {
             }
 }
 
-class App extends Component {
-  constructor(){
-    super();
-    this.state = {
+const initialState = {
       input: '',
       imageUrl: '',
       box: {},
-      route: 'signin'
-    }
+      route: 'signin',
+      user: {
+        id: '',
+        name: '',
+        email: '',
+        password: '',
+        entries: '',
+        joined: ''
+      }
+    };
+class App extends Component {
+  constructor(){
+    super();
+    this.state = initialState;
+  }
+
+  loadUser = (data) =>{
+    this.setState({
+      user : {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        entries: data.entries,
+        joined: data.joined
+      }
+    })
   }
 
   inputChange = (e) =>{
@@ -57,7 +78,11 @@ class App extends Component {
   }
 
   routeChange = (route) =>{
-    this.setState({route});
+    if(route == 'signin'){
+      this.setState(initialState);
+    }else{
+      this.setState({route: route});
+    }
   }
 
   updateBox = (box) =>{
@@ -69,7 +94,27 @@ class App extends Component {
     app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
     //ImageUrl isnt used here because setState rerenders the component asynchronously and at the moment when the previous line 44
     // is being ran, state.imageUrl is still empty
-    .then(response => this.updateBox( this.detectFace(response)) )
+    .then(response => 
+      {
+        if(response){
+          fetch('http://localhost:3001/image',{
+              method: 'put',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({
+                'id' : this.state.user.id,
+              })
+          })
+          .then(res => {
+            // console.log(res)
+            return res.json()
+          })
+          .then(entries =>{
+            this.setState(Object.assign(this.state.user, {entries}))
+          })
+          .catch(console.log);
+        }
+        this.updateBox( this.detectFace(response)) 
+      })
     .catch(err => console.log(err));
   }
 
@@ -82,17 +127,17 @@ class App extends Component {
         <Navigation routeChange = { this.routeChange } route = {route}/>
         {
           route === 'signin' ?
-            <Signin routeChange = { this.routeChange }/>
+            <Signin loadUser = { this.loadUser } routeChange = { this.routeChange }/>
             :
             route === 'home' ?
               <div>
                 <Logo />
-                <Rank />
+                <Rank name={this.state.user.name} entries={this.state.user.entries} />
                 <ImageLinkForm inputChange={ this.inputChange } buttonClicked={ this.buttonClicked } />
                 <FaceRecognition box = {box} imageUrl = { imageUrl }/>
               </div>
               :
-              <Register routeChange = { this.routeChange }/>
+              <Register loadUser = { this.loadUser } routeChange = { this.routeChange }/>
 
         }
       
