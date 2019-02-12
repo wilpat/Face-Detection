@@ -18,14 +18,14 @@ const app = new Clarifai.App({
 
 const particlesPar = {
   particles: {  
-                number:{
-                  value: 200,
-                  density: {
-                    enable: true,
-                    value: 800
-                  }
-                }
-            }
+      number:{
+        value: 200,
+        density: {
+          enable: true,
+          value: 800
+        }
+      }
+  }
 }
 
 const initialState = {
@@ -78,7 +78,7 @@ class App extends Component {
   }
 
   routeChange = (route) =>{
-    if(route == 'signin'){
+    if(route === 'signin'){
       this.setState(initialState);
     }else{
       this.setState({route: route});
@@ -91,7 +91,14 @@ class App extends Component {
 
   buttonClicked = () => {
     this.setState({ imageUrl: this.state.input });
-    app.models.predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
+    fetch('http://localhost:3001/imageAPI',{
+        method: 'put',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          'input' : this.state.input,
+        })
+    })
+    .then(response => response.json())
     //ImageUrl isnt used here because setState rerenders the component asynchronously and at the moment when the previous line 44
     // is being ran, state.imageUrl is still empty
     .then(response => 
