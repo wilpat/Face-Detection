@@ -9,11 +9,6 @@ import Signin from './components/Signin/Signin';
 import Register from './components/Register/Register';
 import './App.css';
 import 'tachyons';
-import Clarifai from 'clarifai';
-
-const app = new Clarifai.App({
- apiKey: '5af5d3e2299d4875b792b365a39f9e23'
-});
 
 
 const particlesPar = {
